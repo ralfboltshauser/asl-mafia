@@ -81,7 +81,7 @@ export function act(r,p,body){
   if(p.role==='town'||(p.role==='angel'&&!angelAvailable(r))){if(target!=='sleep')fail('You have no available night ability.');}
   else if(p.role==='angel'){if(r.config.angelInformed&&!r.nightTarget)fail('Wait for the mafia to finish choosing.');if(target!=='sleep'&&!q)fail('Choose a living player or save your power.');}
   else if(!q||(p.role!=='angel'&&q.id===p.id)||(p.role==='mafia'&&q.role==='mafia'))fail('Choose a valid living player.');
- }else if(target!=='skip'&&(!q||q.id===p.id))fail('Vote for another living player or abstain.');
+ }else if(target!=='skip'&&!q)fail('Vote for a living player or abstain.');
  r.actions[p.id]=target;
  if(r.phase==='night'){settleNight(r);return;}
  if(living(r).every(p=>Object.hasOwn(r.actions,p.id))){

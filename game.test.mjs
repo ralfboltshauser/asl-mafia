@@ -77,3 +77,13 @@ test('in-person setting is lobby-only and older config updates preserve it',()=>
 test('confirmed in-person elimination resolves mafia parity immediately',()=>{
  const r=game(['mafia','mafia','angel','town','town']);r.phase='vote';r.config.dayVoteVisibility='in-person';act(r,r.players[0],{action:'resolve-vote',target:r.players[4].id,confirmed:true,stage:r.stage});assert.equal(r.phase,'over');assert.equal(r.winner,'mafia');assert.equal(r.report.method,'in-person');
 });
+test('self-votes count normally in secret and public voting and remain final',()=>{
+ for(const mode of ['secret','public']){
+  const r=game();r.phase='vote';r.config.dayVoteVisibility=mode;
+  move(r,0,'choose',r.players[0].id);move(r,0,'choose','skip');assert.equal(r.actions[r.players[0].id],r.players[0].id);
+  assert.equal(view(r,r.players[1]).report?.ballots,undefined);
+  for(let i=1;i<5;i++)move(r,i,'choose',r.players[0].id);
+  assert.equal(r.phase,'over');assert.equal(r.winner,'town');assert.equal(r.report.tally[0].count,5);
+  if(mode==='public')assert.deepEqual(r.report.ballots[0],{voter:r.players[0].name,target:r.players[0].name});else assert.equal(r.report.ballots,undefined);
+ }
+});
