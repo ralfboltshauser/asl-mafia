@@ -11,14 +11,14 @@ try{
   await context.addInitScript(()=>localStorage.setItem('asl-mafia-seat-v2',JSON.stringify({token:'test-seat',code:'ABC234'})));
   const page=await context.newPage();let state=fixture();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/api',route=>route.fulfill({json:{state}}));
-  async function update(phase){state.phase=phase;state.stage++;state.revision++;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await page.waitForFunction(phase=>document.querySelector('.game-head')?.textContent.toLowerCase().includes(phase==='lobby'?'gathering':phase),phase);}
+  async function update(phase){state.phase=phase;state.stage++;state.revision++;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await page.waitForFunction(phase=>document.querySelector('.game-head')?.textContent.toLowerCase().includes(phase),phase);}
   async function layout(label){
    const metrics=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,dock:document.querySelector('.action-dock')?.getBoundingClientRect().toJSON(),height:innerHeight,smallInputs:[...document.querySelectorAll('input:not([type=checkbox]),select')].filter(e=>parseFloat(getComputedStyle(e).fontSize)<16).map(e=>e.id),smallButtons:[...document.querySelectorAll('button')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&(r.width<44||r.height<44)}).map(e=>e.textContent)}));
    assert.ok(metrics.scroll<=metrics.width,`${label} ${width}px overflow: ${metrics.scroll}`);assert.deepEqual(metrics.smallInputs,[],`${label}: iOS zoom-risk inputs`);assert.deepEqual(metrics.smallButtons,[],`${label}: small tap targets`);
    if(metrics.dock){assert.ok(metrics.dock.bottom<=metrics.height+1,`${label}: dock outside viewport`);assert.ok(metrics.dock.top>=0,`${label}: dock too tall`);}
   }
   await page.goto(base);await page.locator('.room-code').waitFor();await page.evaluate(()=>document.fonts.ready);await layout('lobby');
-  await page.locator('.angel-settings summary').click();if(!await page.locator('.lobby-players').evaluate(e=>e.open))await page.locator('.lobby-players summary').click();await page.locator('.lobby-players').scrollIntoViewIfNeeded();
+  if(await page.locator('.angel-settings').evaluate(e=>e.open))await page.locator('.angel-settings summary').click();if(!await page.locator('.lobby-players').evaluate(e=>e.open))await page.locator('.lobby-players summary').click();await page.locator('.lobby-players').scrollIntoViewIfNeeded();
   const y=await page.evaluate(()=>scrollY);state.revision++;state.players[11].name='Someone just joined';await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await page.getByText('Someone just joined',{exact:true}).waitFor();
   assert.equal(await page.locator('.angel-settings').evaluate(e=>e.open),false);assert.equal(await page.locator('.lobby-players').evaluate(e=>e.open),true);assert.ok(Math.abs(await page.evaluate(()=>scrollY)-y)<3,'Polling jumped the page');
   await page.screenshot({path:`/tmp/mafia-lobby-${process.env.BROWSER||'chromium'}-${width}.png`});
