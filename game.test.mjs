@@ -104,3 +104,9 @@ test('self limit counts use even without a save; once mode still allows protecti
 test('self-limit configuration is accepted only in the lobby',()=>{
  const r=game();const config={...r.config,angelFrequency:'alternate',angelCountOn:'self'};assert.throws(()=>act(r,r.players[0],{action:'configure',stage:r.stage,config}));r.phase='lobby';act(r,r.players[0],{action:'configure',stage:r.stage,config});assert.equal(r.config.angelCountOn,'self');
 });
+test('readiness can be undone only before the night starts',()=>{
+ const r=game();r.phase='roles';move(r,0,'ready');assert.equal(view(r,r.players[0]).me.submitted,true);move(r,0,'unready');assert.equal(view(r,r.players[0]).me.submitted,false);for(let i=1;i<5;i++)move(r,i,'ready');assert.equal(r.phase,'roles');move(r,0,'ready');assert.equal(r.phase,'night');assert.throws(()=>move(r,0,'unready'));assert.equal(r.phase,'night');
+});
+test('settings undo does not overwrite a newer setting change',()=>{
+ const r=game();r.phase='lobby';const before={...r.config},after={...r.config,angelFrequency:'once'};act(r,r.players[0],{action:'configure',stage:r.stage,config:after});act(r,r.players[0],{action:'configure',stage:r.stage,config:before,expectedConfig:after});assert.deepEqual(r.config,before);act(r,r.players[0],{action:'configure',stage:r.stage,config:{...after,dayVoteVisibility:'public'}});assert.throws(()=>act(r,r.players[0],{action:'configure',stage:r.stage,config:before,expectedConfig:after}));assert.equal(r.config.dayVoteVisibility,'public');
+});

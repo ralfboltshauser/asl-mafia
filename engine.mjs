@@ -50,7 +50,7 @@ export function act(r,p,body){
  if(action==='guide'){if(r.host!==p.id)fail('Only the room creator can do that.');r.guidedNext=true;return;}
  if(stage!==r.stage)fail('The game moved on. Your screen is updating.');
  if(['start','night','vote','restart','remove','configure','resolve-vote'].includes(action)&&r.host!==p.id)fail('Only the room creator can do that.');
- if(action==='configure'){if(r.phase!=='lobby')fail('Roles can only change before the game.');const c=body.config;if(!c||!Number.isInteger(c.mafia)||c.mafia<1||c.mafia>5||typeof c.sheriff!=='boolean'||typeof c.angel!=='boolean')fail('Choose 1–5 mafia and valid role options.');const config={...r.config,...c};if(typeof config.angelInformed!=='boolean'||!['every','alternate','once'].includes(config.angelFrequency)||!['use','save','self'].includes(config.angelCountOn))fail('Choose valid angel rules.');if(config.dayVoteVisibility!==undefined&&!['secret','public','in-person'].includes(config.dayVoteVisibility))fail('Choose secret, public, or in-person day voting.');r.config=config;return;}
+ if(action==='configure'){if(r.phase!=='lobby')fail('Roles can only change before the game.');if(body.expectedConfig&&Object.keys({...r.config,...body.expectedConfig}).some(key=>r.config[key]!==body.expectedConfig[key]))fail('Settings changed since your edit. Review them before trying again.');const c=body.config;if(!c||!Number.isInteger(c.mafia)||c.mafia<1||c.mafia>5||typeof c.sheriff!=='boolean'||typeof c.angel!=='boolean')fail('Choose 1–5 mafia and valid role options.');const config={...r.config,...c};if(typeof config.angelInformed!=='boolean'||!['every','alternate','once'].includes(config.angelFrequency)||!['use','save','self'].includes(config.angelCountOn))fail('Choose valid angel rules.');if(config.dayVoteVisibility!==undefined&&!['secret','public','in-person'].includes(config.dayVoteVisibility))fail('Choose secret, public, or in-person day voting.');r.config=config;return;}
  if(action==='remove'){if(r.phase!=='lobby'||target===p.id)fail('You can only remove other players before the game.');r.players=r.players.filter(p=>p.id!==target);return;}
  if(action==='start'){
   if(r.phase!=='lobby'||r.players.length<5)fail('You need 5–12 players to start.');
@@ -58,6 +58,7 @@ export function act(r,p,body){
   for(let i=n-1;i>0;i--){const j=randomInt(i+1);[roles[i],roles[j]]=[roles[j],roles[i]];}
   r.players.forEach((p,i)=>{p.role=roles[i];p.alive=true;});r.round=1;r.angelLastUsed=null;phase(r,'roles');return;
  }
+ if(action==='unready'){if(r.phase!=='roles')fail('The night has started. Readiness can no longer be undone.');delete r.actions[p.id];return;}
  if(action==='ready'){if(r.phase!=='roles')fail('Roles have already been dealt.');r.actions[p.id]=true;if(r.players.every(p=>r.actions[p.id]))phase(r,'night');return;}
  if(action==='restart'){if(r.phase!=='over')fail('Finish this game first.');r.players.forEach(p=>{p.role=null;p.alive=true;});r.report=null;r.investigations={};r.winner=null;r.round=0;phase(r,'lobby');return;}
  if(action==='night'){if(r.phase!=='result')fail('The next night is not ready.');r.round++;r.investigations={};phase(r,'night');return;}

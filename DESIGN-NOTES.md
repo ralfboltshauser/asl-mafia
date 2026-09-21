@@ -43,3 +43,11 @@ The QR remains beside the room code. Rule settings, readiness names, public ball
 ## Verification
 
 Visual inspection of entry, lobby, reveal, night, morning, vote, result, and game-over captures; mobile and desktop layouts. Real-browser gameplay checks use isolated rooms. Responsive fixtures separately check small and landscape screens, 44px controls, 16px inputs, and stable scroll position while polling. QR tests independently decode the image. Browser testing does not substitute for a physical-phone usability study.
+
+## Help and accidental-action protection
+
+Compact question-mark controls explain role settings, angel limits, voting modes, audio, and consequential actions. Help opens on tap, hover, or keyboard focus and dismisses with Escape or an outside tap. Explanations stay out of the main visual hierarchy.
+
+A player can change or clear an unsubmitted target. The creator can undo the most recent settings edit in the lobby; a server-side comparison prevents undo from overwriting settings changed elsewhere. Readiness can be withdrawn until the last player is ready. Final submissions, skips, phase changes, removing a player, and replacing a saved seat require confirmation. Submitted choices remain final because they can reveal information or advance the game immediately. Native browser confirmation dialogs provide modal focus and platform accessibility.
+
+Verification: 36 engine tests; Chromium and WebKit cancellation/help/undo flows; a complete five-player game; in-person voting cancellation and confirmation; audio controls; five mobile/landscape viewport fixtures. All gameplay tests use separate QA rooms.

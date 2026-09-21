@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const base=process.env.TEST_URL||'http://127.0.0.1:4187';
 const browser=await (process.env.BROWSER==='webkit'?webkit:chromium).launch({headless:true});const pages=[],errors=[];
 try{
- for(let i=0;i<5;i++){const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));pages.push(p);}
+ for(let i=0;i<5;i++){const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await context.newPage();p.on('dialog',d=>d.accept());p.on('pageerror',e=>errors.push(e.message));pages.push(p);}
  if(process.env.GUIDED)await pages[0].addInitScript(()=>{window.audioStarts=0;const start=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){window.audioStarts++;return start.apply(this,args);};});
  const creator=pages[0];await creator.goto(base);await creator.locator('#name').fill('Ralf');await creator.getByRole('button',{name:'Create room',exact:true}).click();await creator.locator('.room-code').waitFor();const code=await creator.locator('.room-code').textContent();
  for(let i=1;i<5;i++){await pages[i].goto(`${base}/?room=${code}`);await pages[i].locator('#name').fill(['','Nina','Sam','Alex','Jo'][i]);await pages[i].getByRole('button',{name:'Join the table'}).click();await pages[i].locator('.room-code').waitFor();}

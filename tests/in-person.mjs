@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const base=process.env.TEST_URL||'http://127.0.0.1:4194';
 const browser=await (process.env.BROWSER==='webkit'?webkit:chromium).launch();
 try{
- const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const page=await context.newPage();page.on('dialog',d=>{if(!d.message().startsWith('Confirm the group'))d.accept();});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base);await page.locator('#name').fill('Manual host');await page.getByRole('button',{name:'Create room',exact:true}).click();await page.locator('.room-code').waitFor();
  await page.locator('#dayVoteVisibility').selectOption('in-person');await page.getByText('Vote aloud as a group.',{exact:false}).waitFor();
  const seats=[await page.evaluate(()=>JSON.parse(localStorage.getItem('asl-mafia-seat-v2')))];const code=seats[0].code;
