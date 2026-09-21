@@ -89,3 +89,9 @@ Verification: Chromium and WebKit PWA tests check manifest, active worker, publi
 All browser `confirm()` calls now use one styled HTML dialog with `role="alertdialog"`, a named title/description, and action-specific confirmation labels. Cancel receives initial focus. Escape and outside taps cancel; Tab stays within the actions and closing restores the trigger (or its replacement after a room update). Narrow screens stack the controls. Motion is a short opacity entrance with a reduced-motion fallback.
 
 Confirmations are asynchronous. A pending confirmation is cancelled if its room, phase, night turn, or own submission state changes, or the page becomes hidden. The server still validates final actions. Full-game tests accept custom dialogs through a test-only observer; dedicated safety/UX tests exercise actual cancel/confirm buttons, keyboard focus, Escape, stale-stage cancellation, and the absence of native dialogs in Chromium and WebKit.
+
+## Role acknowledgment flow
+
+During role onboarding, revealing a role now leads directly to one primary action: “I know my role.” There is no separate Hide control or second confirmation. A successful readiness response hides the role; a failed response keeps it visible and leaves acknowledgment retryable. Players can undo readiness while waiting. Re-reading an already acknowledged role uses the same button to close locally, without submitting readiness twice. Normal in-game private-information toggles and automatic background-tab privacy hiding remain available.
+
+Verified in Chromium and WebKit: no manual hide, pending and failed readiness saves, successful acknowledgment, re-reading without duplicate submission, undo readiness, and the last acknowledgment advancing to night.

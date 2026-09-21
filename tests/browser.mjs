@@ -14,7 +14,7 @@ try{
  if(process.env.GUIDED){await creator.locator('#audio-controls summary').click();await creator.locator('#audio-mode').selectOption('narration');await creator.getByText('Guided night:',{exact:false}).waitFor();}
  await creator.getByRole('button',{name:'Start game'}).click();
  const seats=[],states=[];
- for(const p of pages){await p.getByRole('button',{name:'View private information'}).click();await p.locator('.secret-card').waitFor();seats.push(await p.evaluate(()=>JSON.parse(localStorage.getItem('asl-mafia-seat-v2'))));await p.getByRole('button',{name:'Ready'}).click();await p.waitForFunction(()=>document.querySelector('#app').dataset.phase==='night'||!!document.querySelector('[data-action=unready]'));}
+ for(const p of pages){await p.getByRole('button',{name:'View private information'}).click();await p.locator('.secret-card').waitFor();seats.push(await p.evaluate(()=>JSON.parse(localStorage.getItem('asl-mafia-seat-v2'))));await p.getByRole('button',{name:'I know my role',exact:true}).click();await p.waitForFunction(()=>document.querySelector('#app').dataset.phase==='night'||!!document.querySelector('[data-action=unready]'));}
  async function getState(i){const res=await fetch(`${base}/api`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${seats[i].token}`},body:JSON.stringify({action:'state',code})});assert.equal(res.status,200);return (await res.json()).state;}
  for(let i=0;i<5;i++)states.push(await getState(i));assert.ok(states.every(s=>s.phase==='night'));
  const mafia=states.findIndex(s=>s.me.role==='mafia'),sheriff=states.findIndex(s=>s.me.role==='sheriff'),angel=states.findIndex(s=>s.me.role==='angel'),town=states.findIndex(s=>s.me.role==='town');
