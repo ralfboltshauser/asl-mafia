@@ -1,1 +1,1 @@
-{"name":"mafia-host","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test game.test.mjs"},"devDependencies":{"@playwright/test":"^1.63.0"}}
+{"name":"mafia-host","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test game.test.mjs"},"devDependencies":{"@playwright/test":"^1.63.0","jsqr":"^1.4.0"},"dependencies":{"qrcode-generator":"^2.0.4"}}
