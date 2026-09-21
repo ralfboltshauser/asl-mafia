@@ -10,7 +10,7 @@ if not key:
 lines={
 'mafia':['The town sleeps. Mafia, choose your target. Try to look less pleased about it.','Night falls. Mafia, make your choice. Everyone else, practice looking innocent.'],
 'sheriff':['Mafia, back to sleep. Sheriff, investigate one player. Suspicious eyebrows are not evidence.','Mafia, your work is done. Sheriff, choose someone to investigate. Trust issues finally have a purpose.'],
-'angel':['The town still sleeps. Angel, choose one person to protect, or skip. Yes, saving yourself is allowed.','Keep those eyes closed. Angel, choose your protection, or skip. The town could use a small miracle.'],
+'angel':['The town still sleeps. Angel, choose one person to protect, or skip. Choose from the players on your screen.','Keep those eyes closed. Angel, choose your protection, or skip. The town could use a small miracle.'],
 'dawn':['Night actions are complete. Everyone, wake up and check your screens. Let the wildly confident accusations begin.','Good morning, town. Check your screens for the news. Coffee first, conspiracy theories immediately after.'],
 'ready':['Your night host is ready. Keep this phone awake, turn the volume up, and trust almost no one.']}
 (root/'public/audio/lines.json').write_text(json.dumps(lines,indent=2))

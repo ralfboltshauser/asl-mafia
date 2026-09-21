@@ -10,7 +10,8 @@ export function join(r,p){if(r.phase!=='lobby')fail('This game has already start
 export function playerFor(r,token){const p=r.players.find(p=>p.token===token);if(!p)throw Object.assign(new Error('Your seat could not be found. Join the room again.'),{status:401});return p;}
 function phase(r,next){r.phase=next;r.stage++;r.actions={};if(next==='night'){r.nightTarget=null;r.nightGuide=r.guidedNext?{step:'mafia',started:Date.now(),after:null}:null;}}
 function endIfWon(r){const won=winner(r);if(won){r.winner=won;phase(r,'over');return true;}return false;}
-export function angelAvailable(r){return r.config.angelFrequency==='every'||(r.config.angelFrequency==='once'?!r.angelLastUsed:r.angelLastUsed!==r.round-1);}
+export function angelSelfAvailable(r){return r.config.angelFrequency==='every'||(r.config.angelFrequency==='once'?!r.angelLastUsed:r.angelLastUsed!==r.round-1);}
+export function angelAvailable(r){return r.config.angelCountOn==='self'||angelSelfAvailable(r);}
 export const needsNightAction=(r,p)=>p.alive&&p.role!=='town'&&(p.role!=='angel'||angelAvailable(r));
 // A state poll can finish a pre-update night that was waiting only on villagers.
 export function settleNight(r){
@@ -38,7 +39,7 @@ export function settleNight(r){
  if(sheriff){const checked=r.players.find(p=>p.id===r.actions[sheriff.id]);r.investigations[sheriff.id]={name:checked.name,mafia:checked.role==='mafia',round:r.round};}
  const protection=angel&&angelAvailable(r)?r.actions[angel.id]:null;
  const killed=protection===r.nightTarget?null:r.players.find(p=>p.id===r.nightTarget);
- if(angel&&protection&&protection!=='sleep'&&(r.config.angelCountOn==='use'||!killed))r.angelLastUsed=r.round;
+ if(angel&&protection&&protection!=='sleep'&&(r.config.angelCountOn==='self'?protection===angel.id:r.config.angelCountOn==='use'||!killed))r.angelLastUsed=r.round;
  if(killed)killed.alive=false;
  r.report={kind:'night',name:killed?.name||null};
  if(!endIfWon(r))phase(r,'discussion');
@@ -49,7 +50,7 @@ export function act(r,p,body){
  if(action==='guide'){if(r.host!==p.id)fail('Only the room creator can do that.');r.guidedNext=true;return;}
  if(stage!==r.stage)fail('The game moved on. Your screen is updating.');
  if(['start','night','vote','restart','remove','configure','resolve-vote'].includes(action)&&r.host!==p.id)fail('Only the room creator can do that.');
- if(action==='configure'){if(r.phase!=='lobby')fail('Roles can only change before the game.');const c=body.config;if(!c||!Number.isInteger(c.mafia)||c.mafia<1||c.mafia>5||typeof c.sheriff!=='boolean'||typeof c.angel!=='boolean')fail('Choose 1–5 mafia and valid role options.');const config={...r.config,...c};if(typeof config.angelInformed!=='boolean'||!['every','alternate','once'].includes(config.angelFrequency)||!['use','save'].includes(config.angelCountOn))fail('Choose valid angel rules.');if(config.dayVoteVisibility!==undefined&&!['secret','public','in-person'].includes(config.dayVoteVisibility))fail('Choose secret, public, or in-person day voting.');r.config=config;return;}
+ if(action==='configure'){if(r.phase!=='lobby')fail('Roles can only change before the game.');const c=body.config;if(!c||!Number.isInteger(c.mafia)||c.mafia<1||c.mafia>5||typeof c.sheriff!=='boolean'||typeof c.angel!=='boolean')fail('Choose 1–5 mafia and valid role options.');const config={...r.config,...c};if(typeof config.angelInformed!=='boolean'||!['every','alternate','once'].includes(config.angelFrequency)||!['use','save','self'].includes(config.angelCountOn))fail('Choose valid angel rules.');if(config.dayVoteVisibility!==undefined&&!['secret','public','in-person'].includes(config.dayVoteVisibility))fail('Choose secret, public, or in-person day voting.');r.config=config;return;}
  if(action==='remove'){if(r.phase!=='lobby'||target===p.id)fail('You can only remove other players before the game.');r.players=r.players.filter(p=>p.id!==target);return;}
  if(action==='start'){
   if(r.phase!=='lobby'||r.players.length<5)fail('You need 5–12 players to start.');
@@ -79,7 +80,7 @@ export function act(r,p,body){
  if(r.phase==='night'){
   if(r.nightGuide&&needsNightAction(r,p)&&p.role!==r.nightGuide.step)fail('Wait for your role to be called.');
   if(p.role==='town'||(p.role==='angel'&&!angelAvailable(r))){if(target!=='sleep')fail('You have no available night ability.');}
-  else if(p.role==='angel'){if(r.config.angelInformed&&!r.nightTarget)fail('Wait for the mafia to finish choosing.');if(target!=='sleep'&&!q)fail('Choose a living player or save your power.');}
+  else if(p.role==='angel'){if(target===p.id&&!angelSelfAvailable(r))fail('Self-protection is unavailable. Choose someone else or skip.');if(r.config.angelInformed&&!r.nightTarget)fail('Wait for the mafia to finish choosing.');if(target!=='sleep'&&!q)fail('Choose a living player or save your power.');}
   else if(!q||(p.role!=='angel'&&q.id===p.id)||(p.role==='mafia'&&q.role==='mafia'))fail('Choose a valid living player.');
  }else if(target!=='skip'&&!q)fail('Vote for a living player or abstain.');
  r.actions[p.id]=target;
@@ -93,4 +94,4 @@ export function act(r,p,body){
    if(!endIfWon(r))phase(r,'result');
  }
 }
-export function view(r,p){return {guidedNext:!!r.guidedNext,nightCue:r.phase==='night'?r.nightGuide?.step||null:null,revision:r.revision,code:r.code,config:r.config,host:r.host,phase:r.phase,stage:r.stage,round:r.round,winner:r.winner||null,report:r.report,me:{id:p.id,name:p.name,role:p.role,alive:p.alive,submitted:r.phase==='night'?!needsNightAction(r,p)||Object.hasOwn(r.actions,p.id):Object.hasOwn(r.actions,p.id),nightTurnOpen:!r.nightGuide||r.nightGuide.step===p.role,nightActionRequired:r.phase==='night'&&needsNightAction(r,p),investigation:r.investigations[p.id]||null,...(p.role==='angel'?{angelAvailable:angelAvailable(r),angelWaiting:r.phase==='night'&&r.config.angelInformed&&angelAvailable(r)&&!r.nightTarget,angelTarget:r.phase==='night'&&r.config.angelInformed&&angelAvailable(r)&&r.nightTarget?r.players.find(q=>q.id===r.nightTarget).name:null}:{})},team:p.role==='mafia'?r.players.filter(q=>q.role==='mafia'&&q.id!==p.id).map(q=>({id:q.id,name:q.name})):[],submitted:r.phase==='night'?0:Object.keys(r.actions).length,players:r.players.map(q=>({id:q.id,name:q.name,alive:q.alive,submitted:r.phase!=='night'&&Object.hasOwn(r.actions,q.id),...(r.phase==='over'?{role:q.role}:{})}))};}
+export function view(r,p){return {guidedNext:!!r.guidedNext,nightCue:r.phase==='night'?r.nightGuide?.step||null:null,revision:r.revision,code:r.code,config:r.config,host:r.host,phase:r.phase,stage:r.stage,round:r.round,winner:r.winner||null,report:r.report,me:{id:p.id,name:p.name,role:p.role,alive:p.alive,submitted:r.phase==='night'?!needsNightAction(r,p)||Object.hasOwn(r.actions,p.id):Object.hasOwn(r.actions,p.id),nightTurnOpen:!r.nightGuide||r.nightGuide.step===p.role,nightActionRequired:r.phase==='night'&&needsNightAction(r,p),investigation:r.investigations[p.id]||null,...(p.role==='angel'?{angelAvailable:angelAvailable(r),angelSelfAvailable:angelSelfAvailable(r),angelWaiting:r.phase==='night'&&r.config.angelInformed&&angelAvailable(r)&&!r.nightTarget,angelTarget:r.phase==='night'&&r.config.angelInformed&&angelAvailable(r)&&r.nightTarget?r.players.find(q=>q.id===r.nightTarget).name:null}:{})},team:p.role==='mafia'?r.players.filter(q=>q.role==='mafia'&&q.id!==p.id).map(q=>({id:q.id,name:q.name})):[],submitted:r.phase==='night'?0:Object.keys(r.actions).length,players:r.players.map(q=>({id:q.id,name:q.name,alive:q.alive,submitted:r.phase!=='night'&&Object.hasOwn(r.actions,q.id),...(r.phase==='over'?{role:q.role}:{})}))};}

@@ -87,3 +87,20 @@ test('self-votes count normally in secret and public voting and remain final',()
   if(mode==='public')assert.deepEqual(r.report.ballots[0],{voter:r.players[0].name,target:r.players[0].name});else assert.equal(r.report.ballots,undefined);
  }
 });
+test('self-protection cooldown limits self only and permits others during the rest night',()=>{
+ const r=game();r.config.angelFrequency='alternate';r.config.angelCountOn='self';
+ move(r,0,'choose',r.players[2].id);move(r,1,'choose',r.players[0].id);move(r,2,'choose',r.players[2].id);
+ assert.equal(r.report.name,null);assert.equal(r.angelLastUsed,1);
+ r.phase='result';move(r,0,'night');assert.equal(view(r,r.players[2]).me.angelAvailable,true);assert.equal(view(r,r.players[2]).me.angelSelfAvailable,false);assert.equal(view(r,r.players[2]).me.nightActionRequired,true);
+ assert.throws(()=>move(r,2,'choose',r.players[2].id),/Self-protection/);
+ move(r,0,'choose',r.players[3].id);move(r,1,'choose',r.players[0].id);move(r,2,'choose',r.players[3].id);
+ assert.equal(r.report.name,null);assert.equal(r.angelLastUsed,1,'saving another player never consumes self cooldown');
+ r.phase='result';move(r,0,'night');assert.equal(view(r,r.players[2]).me.angelSelfAvailable,true);
+});
+test('self limit counts use even without a save; once mode still allows protecting others',()=>{
+ const r=game();r.config.angelFrequency='once';r.config.angelCountOn='self';finishProtectedNight(r,r.players[2].id);assert.equal(r.angelLastUsed,1);r.phase='result';move(r,0,'night');assert.equal(view(r,r.players[2]).me.angelSelfAvailable,false);assert.equal(view(r,r.players[2]).me.angelAvailable,true);assert.throws(()=>move(r,2,'choose',r.players[2].id));move(r,2,'choose',r.players[4].id);
+ const skipped=game();skipped.config.angelFrequency='alternate';skipped.config.angelCountOn='self';finishProtectedNight(skipped,'sleep');assert.equal(skipped.angelLastUsed,undefined);
+});
+test('self-limit configuration is accepted only in the lobby',()=>{
+ const r=game();const config={...r.config,angelFrequency:'alternate',angelCountOn:'self'};assert.throws(()=>act(r,r.players[0],{action:'configure',stage:r.stage,config}));r.phase='lobby';act(r,r.players[0],{action:'configure',stage:r.stage,config});assert.equal(r.config.angelCountOn,'self');
+});
