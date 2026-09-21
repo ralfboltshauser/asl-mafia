@@ -1,0 +1,8 @@
+.env*
+.projects/
+.data/
+node_modules/
+tests/
+game.test.mjs
+README.md
+test-results/
