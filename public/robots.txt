@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api
+
+Sitemap: https://asl-mafia.ralfboltshauser.com/sitemap.xml
