@@ -27,7 +27,7 @@
     }
   ],
   "framework": null,
-  "buildCommand": "",
+  "buildCommand": "node scripts/build-pwa.mjs",
   "regions": [
     "fra1"
   ]

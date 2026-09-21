@@ -4,7 +4,7 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4200';
 for(const engine of [chromium,webkit]){
  const browser=await engine.launch();
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const context=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   let release,creates=0;const gate=new Promise(r=>release=r);
   await page.route('**/api',async route=>{if(route.request().postDataJSON().action==='create'){creates++;await gate;}await route.continue();});

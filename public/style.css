@@ -63,3 +63,15 @@ input[role=switch]::before{transition:transform 160ms cubic-bezier(.25,1,.5,1)}
 @media(max-width:360px){.readiness-track{width:52px}.connection{gap:8px}}
 @media(prefers-reduced-motion:reduce){.spinner,.loading-lines span{animation:none}button,input[role=switch]::before{transition:none}button:active:not(:disabled){transform:none}#help-popover:popover-open,#invite-dialog[open],#copy-notice:not([hidden]){animation:none}}
 .saving-state{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;white-space:nowrap}.saving-state .spinner{width:14px;height:14px}
+/* Mobile app foundations: readable type, thumb-sized controls, stable focus. */
+:root{--z-dock:10;--z-feedback:11;--z-menu:20;--z-toast:30;--control-border:oklch(.54 .01 130)}
+body{font-synthesis:none}p{text-wrap:pretty}.results,.role-count,.inline-code{font-variant-numeric:tabular-nums}
+button,summary{user-select:none}.link{text-underline-offset:4px}input:not([type=checkbox]),select{border-color:var(--control-border)}
+input[role=switch],input[role=switch]:checked{position:relative;isolation:isolate;height:44px;min-height:44px;padding:12px 3px;background:transparent;overflow:visible}
+input[role=switch]::after{content:'';position:absolute;inset:9px 0;border-radius:20px;background:var(--control-border);z-index:-1}input[role=switch]:checked::after{background:var(--ink)}
+.help-button>span{border-color:var(--control-border)}.action-dock{z-index:var(--z-dock);border-top:1px solid var(--line)}#audio-controls .audio-panel{z-index:var(--z-menu)}#copy-notice{z-index:var(--z-toast)}
+#app:focus{outline:none}h1[tabindex]:focus{outline:none}.skip-link{position:fixed;top:12px;left:12px;z-index:var(--z-toast);padding:12px 18px;border-radius:8px;background:var(--ink);color:var(--bg);transform:translateY(-200%)}.skip-link:focus{transform:none}
+#install-dialog{width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;padding:24px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px}#install-dialog::backdrop{background:oklch(0 0 0 / .7)}#install-dialog .invite-heading{align-items:flex-start}#install-dialog h2{font-size:26px;line-height:1.2;letter-spacing:-.7px}#install-dialog>.muted{margin:20px 0}.install-steps{padding-left:22px;margin:24px 0}.install-steps li{padding-left:6px;margin:20px 0}.install-steps p{color:var(--muted);font-size:15px;margin:8px 0}#install-close{font-size:26px}#install-dialog .caption{border-top:1px solid var(--line);padding-top:20px;margin-bottom:0}
+#invite-dialog,#help-popover{overscroll-behavior:contain}footer{gap:16px;flex-wrap:wrap}.saving-state{white-space:normal}.cast-card .section-title{flex-wrap:wrap;gap:8px}
+@media(display-mode:standalone){body{min-height:100dvh}header{padding-top:8px}}
+@media(prefers-reduced-motion:no-preference){#install-dialog[open]{animation:soft-appear 180ms cubic-bezier(.25,1,.5,1)}}

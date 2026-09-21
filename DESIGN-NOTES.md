@@ -59,3 +59,27 @@ Startup and saved-seat restoration now have an explicit loading screen instead o
 A failed saved-room connection retains the seat and offers Retry or Back to start. An interrupted active room stays visible and reconnects automatically with a manual retry option. Polls cannot overlap. Network errors preserve drafts and choices. Motion uses short heading entrances, button feedback, subtle popover fades, and transform-only spinners. Reduced-motion mode removes movement and looping animation. No backend rules or stored rooms changed.
 
 Verified slow-request and failed-connection flows in Chromium and WebKit, including reduced motion and no entry-form flash while resuming. Full gameplay, confirmation/undo regressions, recovery scenarios, and five WebKit mobile/landscape viewport checks pass. Inspected mobile loading, first-player, submission, and offline screenshots. Physical devices were not tested.
+
+## Mobile-first PWA and design-skill audit
+
+Applied the relevant guidance from design-foundations, typography, color, surfaces, forms-and-inputs, touch-and-accessibility, ui-polish, animate, animation-accessibility, performance, and ui-review; Apple/Emil guidance informed restraint and platform behavior. The broader catalog was assessed for fit: React component/motion recipes, marketing layouts, gesture physics, vocabulary lookup, and prototype interviews do not match this vanilla-JavaScript game. No framework or animation dependency was added.
+
+| Before | After | Why |
+| --- | --- | --- |
+| Browser-only launch | Manifest, standalone display, branded standard/maskable/Apple icons | A recognizable home-screen app |
+| Network failure prevents a fresh launch | Versioned public shell available offline | Retain access to recovery and saved-seat UI |
+| No explicit installation path | Quiet entry-screen install button; native prompt when available, platform instructions otherwise | Install before creating a seat; avoid interrupting a game |
+| 26px switch box | 44px hit box around the same compact switch | Reliable thumb interaction |
+| Tab semantics without arrow navigation | Roving tab stop, arrows/Home/End, associated panel | Complete keyboard interaction |
+| Phase changes can strand focus | Focus moves to the new phase heading; skip link added | Screen-reader and keyboard orientation |
+| Polling dismisses open help | Same-phase updates preserve the open help | Read explanations without interruption |
+| Faint input/help boundaries | Semantic control-border token, measured 3.76:1 on canvas | More visible affordances |
+| Unversioned updates | Shell content hash generated at build; new worker waits for old clients to close | Avoid mixed versions and forced mid-game reloads |
+
+Color changes in `public/style.css`: control borders and help-circle borders previously used `var(--line)` (`#30342e`); now use `--control-border: oklch(.54 .01 130)`. Off switches use the same token instead of `#53594e`; on switches use existing `--ink` instead of `#e1e6d9`. The new install backdrop uses `oklch(0 0 0 / .7)`. Existing brand/text palette retained. Measured contrast: body 16.82:1; muted on canvas 8.02:1; muted on panel 7.34:1. Motion remains short, compositor-oriented, and disabled for reduced-motion users.
+
+Only public shell URLs are cached (approximately 280 KB uncompressed including fonts/icons). `/api`, POST requests, private roles, votes, and audio are never cached or queued. Live play needs internet. Installation may use separate browser storage, so the install affordance is on the entry screen and explains that a browser seat may not carry over. Future deployments run `npm run build` to derive the cache version from shell contents. Existing clients are never force-reloaded; close old tabs/app windows to activate a waiting update.
+
+Primary platform references: [web.dev service-worker lifecycle](https://web.dev/articles/service-worker-lifecycle), [MDN installability](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable), and [Apple home-screen web apps](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios).
+
+Verification: Chromium and WebKit PWA tests check manifest, active worker, public-only cache, offline launch, saved-seat preservation, and recovery. WebKit offline navigation hit an automation internal error with `setOffline`; its PWA test instead disconnects an upstream proxy, exercising real cache fallback. A separate Chromium lifecycle test verifies updates wait without reload/draft loss, then activate after the old client closes. Slow-request fixture tests block service workers so request interception remains deterministic. Full five-player gameplay, safety confirmations, and five mobile viewport checks passed. Physical iPhone/Android installation has not been verified on hardware.
