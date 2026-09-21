@@ -1,5 +1,5 @@
 // Version is derived from the public shell by scripts/build-pwa.mjs.
-const CACHE='asl-mafia-shell-aaca7c0b10fa20d1';
+const CACHE='asl-mafia-shell-02d7ab1368d98f92';
 const SHELL=['/','/app.js','/pwa.js','/style.css','/audio.js','/qrcode.js','/asl-logo.svg','/favicon.svg','/inter.woff2','/mono.woff2','/manifest.webmanifest','/icon-192.png','/icon-512.png','/icon-maskable.png','/apple-touch-icon.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL))));
 // Let existing clients finish. No skipWaiting, claim, or forced reload during games.

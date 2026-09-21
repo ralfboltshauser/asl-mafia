@@ -75,3 +75,7 @@ input[role=switch]::after{content:'';position:absolute;inset:9px 0;border-radius
 #invite-dialog,#help-popover{overscroll-behavior:contain}footer{gap:16px;flex-wrap:wrap}.saving-state{white-space:normal}.cast-card .section-title{flex-wrap:wrap;gap:8px}
 @media(display-mode:standalone){body{min-height:100dvh}header{padding-top:8px}}
 @media(prefers-reduced-motion:no-preference){#install-dialog[open]{animation:soft-appear 180ms cubic-bezier(.25,1,.5,1)}}
+#confirm-dialog{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;padding:28px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px}
+#confirm-dialog::backdrop{background:oklch(0 0 0 / .72)}#confirm-title{font-size:28px;line-height:1.2;letter-spacing:-.8px;margin:0 0 16px;overflow-wrap:anywhere;text-wrap:pretty}#confirm-description{color:var(--muted);font-size:16px;line-height:1.55;margin:0 0 28px;white-space:pre-line}#confirm-description:empty{display:none}.confirm-actions{display:flex;gap:12px;justify-content:flex-end}.confirm-actions button{flex:1;min-height:50px;margin:0;min-width:0}.confirm-actions .secondary{width:auto}
+@media(max-width:360px){#confirm-dialog{padding:22px}#confirm-title{font-size:25px}.confirm-actions{flex-direction:column-reverse}}
+@media(prefers-reduced-motion:no-preference){#confirm-dialog[open]{animation:soft-appear 160ms cubic-bezier(.25,1,.5,1)}}

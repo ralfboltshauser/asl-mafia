@@ -1,9 +1,10 @@
+import {autoConfirm} from './confirmation.mjs';
 import {chromium} from 'playwright';import assert from 'node:assert/strict';
 const base=process.env.TEST_URL||'http://127.0.0.1:4199';const seats=[];let code;
 async function api(i,action,extra={}){const res=await fetch(`${base}/api`,{method:'POST',headers:{'Content-Type':'application/json',...(seats[i]?{Authorization:`Bearer ${seats[i].token}`}:{})},body:JSON.stringify({code,action,...extra})});const data=await res.json();assert.equal(res.status,200,JSON.stringify(data));return data;}
 const browser=await chromium.launch();try{
  const first=await api(0,'create',{name:'Self-limit host'});code=first.state.code;seats.push(first);for(let i=1;i<5;i++)seats.push(await api(i,'join',{name:`Player ${i}`}));
- async function pageFor(i){const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});await ctx.addInitScript(seat=>localStorage.setItem('asl-mafia-seat-v2',JSON.stringify(seat)),{code,token:seats[i].token});const page=await ctx.newPage();page.on('dialog',d=>d.accept());await page.goto(base);return page;}
+ async function pageFor(i){const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});await ctx.addInitScript(seat=>localStorage.setItem('asl-mafia-seat-v2',JSON.stringify(seat)),{code,token:seats[i].token});const page=await ctx.newPage();await autoConfirm(page);await page.goto(base);return page;}
  const host=await pageFor(0);await host.locator('.angel-settings summary').click();await host.locator('#angelFrequency').selectOption('alternate');await host.locator('#angelCountOn').selectOption('self');await host.getByText('Only self-protection is limited.',{exact:false}).waitFor();assert.equal((await api(0,'state')).state.config.angelCountOn,'self');await host.getByRole('button',{name:'Start game',exact:true}).click();let state=(await api(0,'state')).state;for(let i=0;i<5;i++)await api(i,'ready',{stage:state.stage});
  const states=await Promise.all(seats.map((_,i)=>api(i,'state').then(d=>d.state)));const angel=states.findIndex(s=>s.me.role==='angel'),mafia=states.findIndex(s=>s.me.role==='mafia'),sheriff=states.findIndex(s=>s.me.role==='sheriff'),town=states.findIndex(s=>s.me.role==='town');const page=await pageFor(angel);
  for(let round=1;round<=3;round++){
